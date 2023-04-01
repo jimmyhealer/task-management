@@ -18,7 +18,6 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-
 User Story
 
 - [ ] 先讓使用者登入 (github Oauth)  (index.tsx)
