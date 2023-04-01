@@ -2,18 +2,24 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 
-async function Login(code: string): Promise<void> {
-  const res = await fetch(
-    `/github/login/oauth/access_token?client_id=24260c7de28ce45f53b5&client_secret=${process.env.CLIENT_SECRET}&code=${code}`,
-    {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-  const data = await res.json()
-  window.sessionStorage.setItem('token', data.access_token)
+async function Login(code: string): Promise<string> {
+  try {
+    const res = await fetch(
+      `/github/login/oauth/access_token?client_id=24260c7de28ce45f53b5&client_secret=${process.env.CLIENT_SECRET}&code=${code}`,
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+    const data = await res.json()
+    return data.access_token
+  }
+  catch (err) {
+    console.log(err)
+    throw err
+  }
 }
 
 export default function Home() {
@@ -32,7 +38,8 @@ export default function Home() {
       router.push('/task')
     } else if (code) {
       Login(code as string)
-      .then(() => {
+      .then((access_token) => {
+        window.sessionStorage.setItem('token', access_token)
         setIsLogin(true)
         router.push('/task')
       })

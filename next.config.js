@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
+require('dotenv').config()
+
 const nextConfig = {
   reactStrictMode: false,
+  env: {
+    CLIENT_SECRET: process.env.CLIENT_SECRET,
+  },
   async rewrites() {
     return [
       {
