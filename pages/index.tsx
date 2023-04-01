@@ -17,7 +17,7 @@ async function Login(code: string): Promise<string> {
     return data.access_token
   }
   catch (err) {
-    console.log(err)
+    console.error(err)
     throw err
   }
 }
