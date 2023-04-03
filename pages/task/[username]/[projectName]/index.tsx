@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 import { isColorDark } from '@/utils'
+import { Task, getRepoTask, createTask } from '@/api'
+import EditModal from '@/components/EditModal'
 
 import InfiniteScroll from 'react-infinite-scroll-component'
 import {
@@ -12,65 +14,10 @@ import {
   ButtonGroup,
   Card,
   Typography,
-  IconButton,
+  IconButton
 } from '@mui/material'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-
-async function getRepoTask(
-  owner: string,
-  projectName: string,
-  search: string,
-  labels: string,
-  order: string,
-  page: number
-): Promise<Object[]> {
-  const token = window.sessionStorage.getItem('token')
-  try {
-    let q = `in:issue repo:${owner}/${projectName}`
-
-    if (search) {
-      q += `+${search}`
-    }
-
-    if (labels) {
-      let label_item = labels.split(',')
-      let label_tmp = [] as string[]
-      label_item.forEach(label => {
-        if (label == '') return
-        if (label[0] == '-') {
-          q += `+-label:${label.slice(1)}`
-        } else {
-          label_tmp.push(label)
-        }
-      })
-      if (label_tmp.length > 0) {
-        q += `+label:${label_tmp.join(',')}`
-      }
-    }
-
-    const res = await fetch(
-      `/api/search/issues?q=${q}&sort=created&order=${order}&per_page=10&page=${page}`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      }
-    )
-
-    if (res.status != 200) {
-      throw new Error(`${res.status} ${res.statusText}`)
-    }
-
-    const data = await res.json()
-    return data.items
-  } catch (err) {
-    throw err
-  }
-}
 
 function TaskItem({ task }: any) {
   return (
@@ -95,7 +42,7 @@ function TaskItem({ task }: any) {
           <h2
             style={{
               marginRight: '8px',
-              fontSize: '1.5rem',
+              fontSize: '1.5rem'
             }}
           >
             {task.title} #{task.number}
@@ -136,7 +83,7 @@ function TaskItem({ task }: any) {
   )
 }
 
-type Tasktatus = {
+interface Tasktatus {
   open: boolean
   in_progress: boolean
   done: boolean
@@ -161,6 +108,7 @@ export default function TaskList() {
     in_progress: true,
     done: true
   })
+  const [modalOpen, setModalOpen] = useState(false)
 
   const fetchData = (
     _search: string,
@@ -172,8 +120,7 @@ export default function TaskList() {
       .then(data => {
         if (_page == 1) {
           setTask(data)
-        }
-        else {
+        } else {
           setTask(prevTask => [...prevTask, ...data])
         }
       })
@@ -226,6 +173,18 @@ export default function TaskList() {
     return status
   }
 
+  const saveHandler = (task: Task): void => {
+    createTask(username, projectName, task)
+      .then(() => {
+        setModalOpen(false)
+        setPage(1)
+        fetchData(Q, labels, qorder, 1)
+      })
+      .catch(err => {
+        console.error(err)
+      })
+  }
+
   useEffect(() => {
     if (!username || !projectName) return
     const initial = () => {
@@ -237,7 +196,6 @@ export default function TaskList() {
     }
 
     initial()
-    console.log(Task)
     fetchData(Q, labels, qorder, 1)
   }, [username, projectName, Q, labels, qorder])
 
@@ -275,12 +233,10 @@ export default function TaskList() {
       <Container>
         <div
           style={{
-            display: 'flex',
+            display: 'flex'
           }}
         >
-          <IconButton
-            onClick={() => router.push('/task')}
-          >
+          <IconButton onClick={() => router.push('/task')}>
             <ArrowBackIosIcon />
           </IconButton>
           <h1>TaskList</h1>
@@ -299,7 +255,6 @@ export default function TaskList() {
             target="_blank"
             style={{
               marginLeft: 'auto',
-              textDecoration: 'none'
             }}
           >
             Go to github
@@ -365,12 +320,25 @@ export default function TaskList() {
             {order == 'desc' ? 'newest' : 'oldest'}
           </Button>
 
-          <Button variant="contained"> New Task</Button>
+          <Button variant="contained" onClick={() => setModalOpen(true)}>
+            New Task
+          </Button>
+          <EditModal
+            open={modalOpen}
+            task={{
+              title: '',
+              body: ''
+            }}
+            closeHandler={() => {
+              setModalOpen(false)
+            }}
+            saveHandler={saveHandler}
+          />
         </div>
 
         <Card
           style={{
-            padding: '20px',
+            padding: '20px'
           }}
         >
           <InfiniteScroll

@@ -1,28 +1,10 @@
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 
+import { Login } from '@/api'
+
 import { Card, CardContent, Container, Button } from '@mui/material'
 import GitHubIcon from '@mui/icons-material/GitHub'
-
-async function Login(code: string): Promise<string> {
-  try {
-    const res = await fetch(
-      `/github/login/oauth/access_token?client_id=24260c7de28ce45f53b5&client_secret=${process.env.CLIENT_SECRET}&code=${code}`,
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    const data = await res.json()
-    return data.access_token
-  } catch (err) {
-    console.error(err)
-    throw err
-  }
-}
 
 export default function Home() {
   const router = useRouter()
@@ -45,7 +27,7 @@ export default function Home() {
         router.push('/task')
       })
     }
-  }, [isLogin, code])
+  }, [router, isLogin, code])
 
   return (
     <>

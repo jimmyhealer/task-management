@@ -1,28 +1,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-import { Container, Card, CardContent, List, ListItem } from '@mui/material'
-import { textAlign } from '@mui/system'
+import { getRepos } from '@/api'
 
-async function getRepos(): Promise<any> {
-  const token = window.sessionStorage.getItem('token')
-
-  try {
-    const res = await fetch('/api/user/repos?sort=updated', {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
-    const data = await res.json()
-    return data
-  } catch (err) {
-    console.error(err)
-    throw err
-  }
-}
+import { Container, Card, CardContent } from '@mui/material'
 
 function RepoComponent(repo: any) {
   return (

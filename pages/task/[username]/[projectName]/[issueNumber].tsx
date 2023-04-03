@@ -1,7 +1,10 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 
 import { isColorDark } from '@/utils'
+import EditModal from '@/components/EditModal'
+import type { Task } from '@/api'
+import { getRepoTaskDetail, updateTask, deleteTask, setTaskLabels } from '@/api'
 
 import {
   Container,
@@ -11,43 +14,17 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
-  Typography
+  Typography,
+  FormControl,
+  FormControlLabel,
+  RadioGroup,
+  Radio
 } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-
-async function getRepoIssueDetail(
-  owner: string,
-  projectName: string,
-  issueNumber: string
-): Promise<Object[]> {
-  const token = window.sessionStorage.getItem('token')
-
-  try {
-    const res = await fetch(
-      `/api/repos/${owner}/${projectName}/issues/${issueNumber}`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      }
-    )
-
-    if (res.status != 200) {
-      throw new Error(`${res.status} ${res.statusText}`)
-    }
-
-    const data = await res.json()
-    return data
-  } catch (err) {
-    throw err
-  }
-}
+import { NodeArray } from 'typescript'
 
 export default function TaskDetail() {
   const router = useRouter()
@@ -58,24 +35,121 @@ export default function TaskDetail() {
   }
 
   const [task, setTask] = useState({} as any)
+  const [taskStatus, setTaskStatus] = useState(0)
   const [anchorEl, setAnchorEl] = useState(null)
-  const open = Boolean(anchorEl)
-  const handleClick = (event: any) => {
-    setAnchorEl(event.currentTarget)
-  }
-  const handleClose = () => {
-    setAnchorEl(null)
+  const menu_open = Boolean(anchorEl)
+  const [modal_open, setModalOpen] = useState(false)
+
+  enum STATUS {
+    OPEN,
+    IN_PROGRESS,
+    DONE
   }
 
-  useEffect(() => {
-    if (!username || !projectName || !issueNumber) return
-    getRepoIssueDetail(username, projectName, issueNumber)
+  const fetchData = (): void => {
+    getRepoTaskDetail(username, projectName, issueNumber)
       .then(data => {
         setTask(data)
+        setTaskStatus(getTaskStatus(data))
       })
       .catch(err => {
         console.error(err)
       })
+  }
+
+  const getTaskStatus = (task: any): STATUS => {
+    if (!task.labels) return STATUS.OPEN
+
+    let labels = task.labels as any[]
+    let status = labels.filter((label: any) => {
+      return label.name == 'In Progress' || label.name == 'Done'
+    })
+
+    if (status.length == 0) {
+      return STATUS.OPEN
+    } else if (status[0].name == 'In Progress') {
+      return STATUS.IN_PROGRESS
+    } else {
+      return STATUS.DONE
+    }
+  }
+
+  const handleMenuClick = (event: any): void => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = (): void => {
+    setAnchorEl(null)
+  }
+
+  const saveHandler = (task: Task): void => {
+    updateTask(username, projectName, issueNumber, task)
+      .then(() => {
+        setModalOpen(false)
+        fetchData()
+      })
+      .catch(err => {
+        console.error(err)
+      })
+  }
+
+  const deleteHandler = (): void => {
+    deleteTask(username, projectName, issueNumber)
+      .then(() => {
+        router.push(`/task/${username}/${projectName}`)
+      })
+      .catch(err => {
+        console.error(err)
+      })
+  }
+
+  const statusHandler = (
+    e: ChangeEvent<HTMLInputElement>,
+    status: string | number
+  ): void => {
+    let labels = task.labels as Object[]
+    if (labels.length > 0) {
+      labels = labels.filter((label: any) => {
+        return (
+          label.name !== 'Open' &&
+          label.name !== 'In Progress' &&
+          label.name !== 'Done'
+        )
+      })
+    }
+
+    let new_labels: string[] = []
+
+    labels.forEach((label: any) => {
+      new_labels.push(label.name)
+    })
+
+    status = parseInt(status as string, 10)
+
+    switch (status) {
+      case STATUS.IN_PROGRESS:
+        new_labels.push('In Progress')
+        break
+      case STATUS.DONE:
+        new_labels.push('Done')
+        break
+      default:
+        break
+    }
+
+    setTaskLabels(username, projectName, issueNumber, new_labels)
+      .then(() => {
+        setTaskStatus(status as number)
+        // fetchData()
+      })
+      .catch(err => {
+        console.error(err)
+      })
+  }
+
+  useEffect(() => {
+    if (!username || !projectName || !issueNumber) return
+    fetchData()
   }, [username, projectName, issueNumber])
 
   return (
@@ -105,7 +179,7 @@ export default function TaskDetail() {
             fontSize: '1.2rem'
           }}
         >
-          {username} / {projectName} #{issueNumber}{' '}
+          {username} / {projectName} #{issueNumber}
         </p>
         <div>
           {task.labels &&
@@ -131,6 +205,31 @@ export default function TaskDetail() {
         >
           <CardContent>
             <div>
+              <FormControl component="fieldset">
+                <RadioGroup
+                  aria-label="status"
+                  name="status"
+                  value={taskStatus}
+                  onChange={statusHandler}
+                  row
+                >
+                  <FormControlLabel
+                    value={STATUS.OPEN}
+                    control={<Radio />}
+                    label="Open"
+                  />
+                  <FormControlLabel
+                    value={STATUS.IN_PROGRESS}
+                    control={<Radio />}
+                    label="In Progress"
+                  />
+                  <FormControlLabel
+                    value={STATUS.DONE}
+                    control={<Radio />}
+                    label="Done"
+                  />
+                </RadioGroup>
+              </FormControl>
               <div
                 style={{
                   display: 'flex',
@@ -149,7 +248,7 @@ export default function TaskDetail() {
                   aria-label="more"
                   aria-controls="menu"
                   aria-haspopup="true"
-                  onClick={handleClick}
+                  onClick={handleMenuClick}
                 >
                   <MoreVertIcon />
                 </IconButton>
@@ -157,33 +256,47 @@ export default function TaskDetail() {
               <Menu
                 id="menu"
                 anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
+                open={menu_open}
+                onClose={handleMenuClose}
               >
-                <MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setModalOpen(true)
+                    handleMenuClose()
+                  }}
+                >
                   <ListItemIcon>
                     <EditIcon fontSize="small" />
                   </ListItemIcon>
                   Edit
                 </MenuItem>
-                <MenuItem>
+                <MenuItem onClick={deleteHandler}>
                   <ListItemIcon>
                     <DeleteIcon fontSize="small" color="error" />
                   </ListItemIcon>
                   <Typography color="error">Delete</Typography>
                 </MenuItem>
               </Menu>
-              <p
-                style={{
-                  color: '#666'
-                }}
+              <Typography
+                variant="body1"
+                color={'#666'}
+                style={{ whiteSpace: 'pre-line' }}
+                paragraph
               >
                 {task.body}
-              </p>
+              </Typography>
             </div>
           </CardContent>
         </Card>
       </Container>
+      <EditModal
+        open={modal_open}
+        task={task}
+        saveHandler={saveHandler}
+        closeHandler={() => {
+          setModalOpen(false)
+        }}
+      ></EditModal>
     </div>
   )
 }
