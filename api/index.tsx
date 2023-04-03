@@ -225,7 +225,7 @@ async function getRepos(): Promise<any> {
 async function Login(code: string): Promise<string> {
   try {
     const res = await fetch(
-      `/github/login/oauth/access_token?client_id=24260c7de28ce45f53b5&client_secret=${process.env.CLIENT_SECRET}&code=${code}`,
+      `/github/login/oauth/access_token?client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&code=${code}`,
       {
         method: 'POST',
         headers: {

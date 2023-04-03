@@ -70,7 +70,7 @@ export default function Home() {
               <h2>Dcard 2023 Frontend Intern Homework</h2>
               <Button
                 variant="contained"
-                href="https://github.com/login/oauth/authorize?client_id=24260c7de28ce45f53b5&scope=repo"
+                href={`https://github.com/login/oauth/authorize?client_id=${process.env.CLIENT_ID}&scope=repo`}
                 startIcon={<GitHubIcon />}
                 style={{
                   marginTop: '55px'
