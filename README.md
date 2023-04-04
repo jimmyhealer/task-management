@@ -35,7 +35,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 │   │   ├── index.tsx // 顯示所有 project
 │   │   ├── [username]
 │   │       ├── index.tsx // 跳轉所有 project
-│   │       ├── [projectName]3
+│   │       ├── [projectName]
 │   │           ├── index.tsx // 顯示所有 task
 │   │           ├── [issueNumber].tsx // 顯示 task 的詳細資訊
 ├── context
@@ -67,4 +67,4 @@ Step 4. 點擊 Task 顯示詳細資訊
 ## 問題
 
 在改變 Task 的狀態時 (修改 Issue 的 Labels)，如果使用 API 馬上獲取該 Task 的詳細資料，依舊會是舊的資料。\
-但是在 Github 頁面卻是已經是新的資料，猜測是 Github 的 API 有快取之類的。
+但是在 Github 頁面卻是已經是新的資料，猜測是 Github 的 API 有快取之類的，造成用 API 直接獲取整個 Task 資料會是舊的。
