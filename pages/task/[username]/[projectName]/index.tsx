@@ -18,7 +18,6 @@ import {
 } from '@mui/material'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 
-
 function TaskItem({ task }: any) {
   return (
     <div
@@ -117,11 +116,12 @@ export default function TaskList() {
     _page: number
   ): void => {
     getRepoTask(username, projectName, _search, _labels, _order, _page)
-      .then(data => {
+      .then((data: any) => {
+        const tasks = data.items
         if (_page == 1) {
-          setTask(data)
+          setTask(tasks)
         } else {
-          setTask(prevTask => [...prevTask, ...data])
+          setTask(prevTask => [...prevTask, ...tasks])
         }
       })
       .catch(err => {
@@ -254,7 +254,7 @@ export default function TaskList() {
             href={`https://github.com/${username}/${projectName}`}
             target="_blank"
             style={{
-              marginLeft: 'auto',
+              marginLeft: 'auto'
             }}
           >
             Go to github
@@ -350,7 +350,6 @@ export default function TaskList() {
             hasMore={true}
             loader={null}
           >
-            {' '}
             {Task.map((task: any) => {
               return <TaskItem task={task} key={task.id} />
             })}
