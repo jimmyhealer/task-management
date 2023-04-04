@@ -44,6 +44,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 │   ├── index.ts // 一些常用的函式
 ├── api
 │   ├── index.ts // 用來跟 Github API 互動的函式
+├── hoc
+│   ├── withAuth.tsx // 用來檢查是否登入的 hoc
 ```
 
 ## 使用流程
