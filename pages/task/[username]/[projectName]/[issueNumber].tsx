@@ -1,10 +1,11 @@
 import { useRouter } from 'next/router'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useState, useContext } from 'react'
 
 import { isColorDark } from '@/utils'
 import EditModal from '@/components/EditModal'
 import type { Task } from '@/api'
 import { getRepoTaskDetail, updateTask, deleteTask, setTaskLabels } from '@/api'
+import { AlertContext } from '@/context'
 import WithAuth from '@/hoc/withAuth'
 
 import {
@@ -27,6 +28,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
 const TaskDetail = () => {
+  const alertShow = useContext(AlertContext)
   const router = useRouter()
   const { username, projectName, issueNumber } = router.query as {
     username: string
@@ -87,6 +89,7 @@ const TaskDetail = () => {
       .then(() => {
         setModalOpen(false)
         fetchData()
+        alertShow('Task updated successfully', 'success')
       })
       .catch(err => {
         console.error(err)
@@ -97,6 +100,7 @@ const TaskDetail = () => {
     deleteTask(username, projectName, issueNumber)
       .then(() => {
         router.push(`/task/${username}/${projectName}`)
+        alertShow('Task deleted successfully', 'success')
       })
       .catch(err => {
         console.error(err)

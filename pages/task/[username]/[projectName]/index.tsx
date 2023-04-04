@@ -1,11 +1,12 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import Link from 'next/link'
 
 import { isColorDark } from '@/utils'
 import { Task, getRepoTask, createTask } from '@/api'
 import EditModal from '@/components/EditModal'
 import WithAuth from '@/hoc/withAuth'
+import { AlertContext } from '@/context'
 
 import InfiniteScroll from 'react-infinite-scroll-component'
 import {
@@ -90,6 +91,7 @@ interface Tasktatus {
 }
 
 const TaskList = () => {
+  const alertShow = useContext(AlertContext)
   const router = useRouter()
   const { username, projectName, Q, labels, qorder } = router.query as {
     username: string
@@ -180,6 +182,7 @@ const TaskList = () => {
         setModalOpen(false)
         setPage(1)
         fetchData(Q, labels, qorder, 1)
+        alertShow('Task created successfully', 'success')
       })
       .catch(err => {
         console.error(err)
