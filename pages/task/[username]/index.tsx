@@ -1,7 +1,9 @@
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
-export default function Error() {
+import WithAuth from '@/hoc/withAuth'
+
+const Error = () => {
   const router = useRouter()
 
   useEffect(() => {
@@ -15,3 +17,5 @@ export default function Error() {
     </div>
   )
 }
+
+export default WithAuth(Error)

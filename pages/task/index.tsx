@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 import { getRepos } from '@/api'
+import WithAuth from '@/hoc/withAuth'
 
 import { Container, Card, CardContent } from '@mui/material'
 
@@ -52,7 +53,7 @@ function RepoList() {
   )
 }
 
-export default function TaskList() {
+const ProjectList = () => {
   return (
     <div
       style={{
@@ -68,3 +69,5 @@ export default function TaskList() {
     </div>
   )
 }
+
+export default WithAuth(ProjectList)

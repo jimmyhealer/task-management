@@ -5,6 +5,7 @@ import { isColorDark } from '@/utils'
 import EditModal from '@/components/EditModal'
 import type { Task } from '@/api'
 import { getRepoTaskDetail, updateTask, deleteTask, setTaskLabels } from '@/api'
+import WithAuth from '@/hoc/withAuth'
 
 import {
   Container,
@@ -24,9 +25,8 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { NodeArray } from 'typescript'
 
-export default function TaskDetail() {
+const TaskDetail = () => {
   const router = useRouter()
   const { username, projectName, issueNumber } = router.query as {
     username: string
@@ -300,3 +300,5 @@ export default function TaskDetail() {
     </div>
   )
 }
+
+export default WithAuth(TaskDetail)

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { isColorDark } from '@/utils'
 import { Task, getRepoTask, createTask } from '@/api'
 import EditModal from '@/components/EditModal'
+import WithAuth from '@/hoc/withAuth'
 
 import InfiniteScroll from 'react-infinite-scroll-component'
 import {
@@ -88,7 +89,7 @@ interface Tasktatus {
   done: boolean
 }
 
-export default function TaskList() {
+const TaskList = () => {
   const router = useRouter()
   const { username, projectName, Q, labels, qorder } = router.query as {
     username: string
@@ -359,3 +360,5 @@ export default function TaskList() {
     </div>
   )
 }
+
+export default WithAuth(TaskList)
